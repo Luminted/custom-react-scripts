@@ -395,12 +395,12 @@ module.exports = function(
 
   // +++ moving generated react app and clean up
   console.log('\tMoving React client to /client');
-  const FilesAndDirsToMove = [ 'package.json', useYarn? 'yarn.lock' : 'package-lock.json']
+  const filesToMove = [ 'package.json', useYarn? 'yarn.lock' : 'package-lock.json']
   if(!fs.existsSync(path.join(appPath, 'client'))){
     fs.mkdirSync(path.join(appPath, 'client'));
   }
   const clientDirectory = path.join(appPath, 'client');
-  for(const name of FilesAndDirsToMove){
+  for(const name of filesToMove){
     fs.moveSync(path.join(appPath, name), path.join(clientDirectory, name));
   }
 
@@ -409,11 +409,11 @@ module.exports = function(
 
   //+++ setting up packages defined in template.json
   const packages = templateJson.packages;
-  const packageNames = Object.keys(packages)
+  const packageNames = Object.keys(packages);
   packageNames.forEach(packageName => {
     console.log(chalk.green(`setting up package ${packageName}`));
     const dependencies = packages[packageName].dependencies || {};
-    const devDependecies = packages[packageName].devDependencies || {};
+    const devDependencies = packages[packageName].devDependencies || {};
     const packageRoot = path.join(appPath, packageName);
     const packageJsonPath = path.join(packageRoot, 'package.json');
     const gitignorePath = path.join(packageRoot, 'gitignore');
@@ -435,16 +435,15 @@ module.exports = function(
       fs.moveSync(gitignorePath, path.join(packageRoot, '.gitignore'));
     }
     if(!packageJson.dependencies) packageJson.dependencies = {};
-    if(!packageJson.devDependecies) packageJson.devDependecies = {};
+    if(!packageJson.devDependencies) packageJson.devDependencies = {};
     Object.assign(packageJson.dependencies, dependencies);
-    Object.assign(packageJson.devDependecies, devDependecies);
+    Object.assign(packageJson.devDependencies, devDependencies);
     fs.writeFileSync(
       packageJsonPath, 
       JSON.stringify(packageJson, null, 2) + os.EOL
       );
-  })
+  });
 
-  //+++ setting up orchestration tools
   //+++ installing dev dependencies from here on
   if (useYarn) {
     args = ['add', '--dev'];
@@ -454,7 +453,7 @@ module.exports = function(
 
   console.log(chalk.green('Setting up orchestration tools...'));
 
-  //+++ creating root package.json
+  //+++ creating root package.json and setting up Lerna
   const lernaScripts = ['bootstrap'];
   const lernaRunScripts = ['start'];
   const packageJson = {
@@ -470,7 +469,6 @@ module.exports = function(
     JSON.stringify(packageJson, null, 2) + os.EOL
   );
 
-  //+++ setup lerna
   let ownProc = spawn.sync(command, args.concat('lerna'), { stdio: 'inherit' });
     if (ownProc.status !== 0) {
       console.error(`\`${command} ${args.concat('lerna').join(' ')}\` failed`);
