@@ -1,4 +1,7 @@
-# react-scripts
+# custom-react-scripts
+
+# This is an example. It is a custom for to work with https://github.com/Luminted/cra-template-monorepo.
+
 
 This package includes scripts and configuration used by [Create React App](https://github.com/facebook/create-react-app).<br>
 Please refer to its documentation:
